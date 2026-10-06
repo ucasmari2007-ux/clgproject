@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>TreeAI — Tamil Nadu Tree Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,560;0,9..144,650;1,9..144,450&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c130f;
+    --bg-deep:#080d0a;
+    --surface:rgba(255,255,255,0.045);
+    --surface-strong:rgba(255,255,255,0.085);
+    --border:rgba(255,255,255,0.09);
+    --border-soft:rgba(255,255,255,0.06);
+    --text:#f2efe4;
+    --text-dim:#a9b6ab;
+    --text-faint:#71827a;
+    --leaf:#6fcf8e;
+    --leaf-deep:#2f8f6f;
+    --teal:#3aa39a;
+    --amber:#e6b45e;
+    --rose:#dd8f80;
+    --grad-primary: linear-gradient(135deg, #7fd99a 0%, #2f8f7c 100%);
+    --grad-ambient: radial-gradient(60% 60% at 20% 20%, rgba(111,207,142,0.16), transparent 60%),
+                     radial-gradient(50% 50% at 85% 15%, rgba(58,163,154,0.14), transparent 60%),
+                     radial-gradient(70% 60% at 50% 100%, rgba(230,180,94,0.07), transparent 60%);
+    --radius-lg: 26px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+    --shadow-card: 0 20px 60px -20px rgba(0,0,0,0.55);
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  [data-theme="light"]{
+    --bg:#f3f1e8;
+    --bg-deep:#eae7da;
+    --surface:rgba(20,30,24,0.035);
+    --surface-strong:rgba(20,30,24,0.07);
+    --border:rgba(20,30,24,0.10);
+    --border-soft:rgba(20,30,24,0.06);
+    --text:#141d17;
+    --text-dim:#4c5c52;
+    --text-faint:#7c8c82;
+    --shadow-card: 0 20px 50px -22px rgba(20,30,24,0.28);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-padding-top: var(--safe-t);}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Manrope', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    padding-top:var(--safe-t);
+    padding-bottom:var(--safe-b);
+    transition:background .4s ease, color .4s ease;
+  }
+  .serif{font-family:'Fraunces', serif;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  ::selection{background:rgba(111,207,142,0.35);}
+  ::-webkit-scrollbar{height:8px; width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
+
+  /* ---------- Ambient background ---------- */
+  .ambient{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:var(--grad-ambient), var(--bg);
+  }
+  .blob{
+    position:absolute; border-radius:50%; filter:blur(70px); opacity:.55;
+    animation: drift 26s ease-in-out infinite;
+  }
+  .blob.b1{width:38vw; height:38vw; top:-10%; left:-8%; background:radial-gradient(circle,#6fcf8e,transparent 70%); animation-delay:0s;}
+  .blob.b2{width:30vw; height:30vw; bottom:-12%; right:-6%; background:radial-gradient(circle,#3aa39a,transparent 70%); animation-delay:-8s;}
+  .blob.b3{width:22vw; height:22vw; bottom:20%; left:32%; background:radial-gradient(circle,#e6b45e,transparent 70%); opacity:.28; animation-delay:-16s;}
+  @keyframes drift{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%{ transform:translate(3%, -4%) scale(1.08); }
+  }
+  @media (prefers-reduced-motion:reduce){ .blob{animation:none;} }
+
+  .veins{position:absolute; inset:0; opacity:.35; mix-blend-mode:overlay;}
+  [data-theme="light"] .veins{opacity:.18;}
+
+  /* ---------- Logo mark ---------- */
+  .mark{width:34px; height:34px; flex:none;}
+  .wordmark{display:flex; align-items:center; gap:12px;}
+  .wordmark .name{font-family:'Fraunces', serif; font-weight:560; font-size:1.05rem; letter-spacing:.01em;}
+  .wordmark .name b{font-weight:650;}
+
+  /* =========================================================
+     LOGIN SCREEN
+  ========================================================= */
+  #loginScreen{
+    position:relative; z-index:1; min-height:100dvh;
+    display:flex; align-items:center;
+    padding: 6vh 6vw;
+  }
+  .login-grid{
+    width:100%; max-width:1180px; margin:0 auto;
+    display:grid; grid-template-columns: 1.02fr 1fr; gap:64px; align-items:center;
+  }
+  .login-art{position:relative; height:520px;}
+  .login-art svg{width:100%; height:100%;}
+  .login-tag{
+    position:absolute; left:0; top:6%;
+    max-width:340px;
+  }
+  .login-tag .eyebrow{font-size:.8rem; color:var(--text-dim); letter-spacing:.02em;}
+  .login-tag h1{
+    font-family:'Fraunces', serif; font-weight:500; font-size:clamp(2rem,3.2vw,2.7rem);
+    line-height:1.08; margin-top:10px; letter-spacing:-.01em;
+  }
+  .login-tag p{margin-top:16px; color:var(--text-dim); font-size:.98rem; line-height:1.55; max-width:300px;}
+
+  .auth-card{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--border);
+    backdrop-filter:blur(22px) saturate(140%);
+    -webkit-backdrop-filter:blur(22px) saturate(140%);
+    border-radius:var(--radius-lg);
+    padding:40px 38px 34px;
+    box-shadow:var(--shadow-card);
+    animation: cardIn .8s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes cardIn{ from{opacity:0; transform:translateY(18px) scale(.985);} to{opacity:1; transform:none;} }
+
+  .auth-card .brand-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;}
+  .auth-card h2{font-family:'Fraunces', serif; font-weight:500; font-size:1.5rem;}
+  .auth-card .sub{color:var(--text-faint); font-size:.85rem; margin-top:4px;}
+
+  .field{margin-bottom:16px; position:relative;}
+  .field label{
+    display:block; font-size:.74rem; color:var(--text-faint); margin-bottom:7px;
+    font-weight:600; letter-spacing:.01em;
+  }
+  .field input{
+    width:100%; background:var(--surface-strong); border:1px solid var(--border);
+    color:var(--text); border-radius:var(--radius-sm); padding:13px 14px; font-size:.92rem;
+    font-family:inherit; transition:border-color .2s ease, background .2s ease;
+    outline:none;
+  }
+  .field input::placeholder{color:var(--text-faint);}
+  .field input:focus{border-color:var(--leaf); background:var(--surface);}
+  .field input:focus-visible{outline:2px solid var(--leaf); outline-offset:2px;}
+
+  .row-between{display:flex; align-items:center; justify-content:space-between; margin:2px 0 20px;}
+  .chk{display:flex; align-items:center; gap:8px; font-size:.82rem; color:var(--text-dim);}
+  .chk input{accent-color:var(--leaf);}
+  .link-btn{background:none; border:none; color:var(--leaf); font-size:.82rem; font-weight:600; padding:0;}
+  .link-btn:hover{text-decoration:underline;}
+
+  .btn-primary{
+    width:100%; border:none; border-radius:var(--radius-sm);
+    padding:14px; font-weight:700; font-size:.94rem; color:#0a1410;
+    background:var(--grad-primary);
+    position:relative; overflow:hidden;
+    transition:transform .2s ease, box-shadow .2s ease;
+    box-shadow:0 12px 28px -10px rgba(111,207,142,0.45);
+  }
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 16px 34px -10px rgba(111,207,142,0.55);}
+  .btn-primary:active{transform:translateY(0px) scale(.99);}
+  .btn-primary:focus-visible{outline:2px solid var(--text); outline-offset:3px;}
+  .btn-primary .spinner{display:none; width:16px; height:16px; border-radius:50%; border:2px solid rgba(10,20,16,.35); border-top-color:#0a1410; animation:spin .7s linear infinite;}
+  .btn-primary.loading .txt{opacity:0;}
+  .btn-primary.loading .spinner{display:inline-block; position:absolute; left:50%; top:50%; margin:-8px 0 0 -8px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .divider{display:flex; align-items:center; gap:12px; margin:22px 0 16px; color:var(--text-faint); font-size:.78rem;}
+  .divider::before,.divider::after{content:""; flex:1; height:1px; background:var(--border);}
+
+  .switch-mode{text-align:center; font-size:.86rem; color:var(--text-dim);}
+  .switch-mode button{background:none; border:none; color:var(--leaf); font-weight:700; font-size:.86rem;}
+
+  .theme-toggle{
+    width:38px; height:38px; border-radius:50%; border:1px solid var(--border);
+    background:var(--surface-strong); display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); flex:none;
+  }
+  .theme-toggle svg{width:17px; height:17px;}
+  .top-corner{position:fixed; top:calc(24px + var(--safe-t)); right:28px; z-index:5;}
+  [data-theme="light"] .icon-moon{display:none;}
+  [data-theme="dark"] .icon-sun, :root:not([data-theme]) .icon-sun{display:none;}
+
+  .form-hint{font-size:.72rem; color:var(--rose); min-height:14px; margin-top:-8px; margin-bottom:10px;}
+
+  @media (max-width:920px){
+    .login-grid{grid-template-columns:1fr; gap:8px;}
+    .login-art{display:none;}
+    #loginScreen{padding:8vh 6vw;}
+    .auth-card{max-width:440px; margin:0 auto;}
+  }
+
+  /* =========================================================
+     APP SHELL / DASHBOARD
+  ========================================================= */
+  #app{display:none; position:relative; z-index:1; min-height:100dvh;}
+  #app.active{display:block;}
+  #loginScreen.hidden{display:none;}
+
+  .shell{
+    display:grid;
+    grid-template-columns: 84px 1fr;
+    min-height:100dvh;
+  }
+  .rail{
+    border-right:1px solid var(--border-soft);
+    display:flex; flex-direction:column; align-items:center;
+    padding:26px 0 18px;
+    gap:8px;
+  }
+  .rail .wordmark{margin-bottom:22px;}
+  .rail .wordmark .name{display:none;}
+  .nav-btn{
+    width:52px; height:52px; border-radius:16px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+    position:relative; transition:background .2s ease, color .2s ease;
+  }
+  .nav-btn svg{width:21px; height:21px;}
+  .nav-btn.active{background:var(--surface-strong); color:var(--leaf);}
+  .nav-btn:hover{color:var(--text);}
+  .nav-btn .dot{position:absolute; right:8px; top:8px; width:6px; height:6px; border-radius:50%; background:var(--amber); display:none;}
+  .rail-spacer{flex:1;}
+  .rail .logout{color:var(--text-faint);}
+  .rail .logout:hover{color:var(--rose);}
+
+  .main{padding: 28px clamp(18px, 3vw, 42px) 90px; max-width:1280px;}
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    margin-bottom:28px; flex-wrap:wrap;
+  }
+  .greeting .eyebrow{font-size:.78rem; color:var(--text-faint);}
+  .greeting h1{font-family:'Fraunces', serif; font-weight:500; font-size:clamp(1.5rem,2.4vw,2rem); margin-top:4px;}
+  .greeting h1 .accent{color:var(--leaf);}
+  .top-actions{display:flex; align-items:center; gap:12px;}
+  .search-pill{
+    display:flex; align-items:center; gap:9px; background:var(--surface-strong);
+    border:1px solid var(--border); border-radius:999px; padding:10px 16px; width:240px;
+  }
+  .search-pill svg{width:15px; height:15px; color:var(--text-faint); flex:none;}
+  .search-pill input{background:none; border:none; outline:none; color:var(--text); font-size:.85rem; width:100%; font-family:inherit;}
+  .avatar{
+    width:38px; height:38px; border-radius:50%;
+    background:var(--grad-primary); display:flex; align-items:center; justify-content:center;
+    font-weight:800; color:#0a1410; font-size:.85rem; flex:none;
+  }
+
+  .view{display:none; animation:viewIn .45s cubic-bezier(.16,1,.3,1) both;}
+  .view.active{display:block;}
+  @keyframes viewIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+  .grid-hero{display:grid; grid-template-columns:1.5fr 1fr; gap:20px; margin-bottom:28px;}
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:26px; position:relative; overflow:hidden;
+  }
+  .card-glass{backdrop-filter:blur(16px);}
+
+  .hero-scan{
+    background:
+      radial-gradient(120% 140% at 100% 0%, rgba(111,207,142,0.16), transparent 55%),
+      var(--surface);
+    display:flex; flex-direction:column; justify-content:space-between; min-height:250px;
+  }
+  .hero-scan .eyebrow{font-size:.78rem; color:var(--leaf); font-weight:700;}
+  .hero-scan h2{font-family:'Fraunces', serif; font-weight:500; font-size:clamp(1.5rem,2.4vw,2.1rem); margin-top:10px; max-width:360px; line-height:1.15;}
+  .hero-scan p{color:var(--text-dim); margin-top:10px; max-width:340px; font-size:.92rem;}
+  .cta-row{display:flex; gap:12px; margin-top:22px; flex-wrap:wrap;}
+  .btn-cta{
+    background:var(--grad-primary); color:#0a1410; border:none; border-radius:999px;
+    padding:13px 22px; font-weight:700; font-size:.88rem; display:inline-flex; align-items:center; gap:8px;
+    box-shadow:0 12px 26px -10px rgba(111,207,142,0.4);
+  }
+  .btn-ghost{
+    background:var(--surface-strong); color:var(--text); border:1px solid var(--border); border-radius:999px;
+    padding:13px 20px; font-weight:600; font-size:.88rem;
+  }
+  .scan-orb{
+    position:absolute; right:-30px; bottom:-30px; width:200px; height:200px; opacity:.5;
+  }
+
+  .snapshot-card{display:flex; flex-direction:column; gap:16px;}
+  .snapshot-card h3{font-size:.86rem; color:var(--text-dim); font-weight:700;}
+  .metric-row{display:flex; align-items:baseline; justify-content:space-between;}
+  .metric-row .num{font-family:'Fraunces', serif; font-size:2rem; font-weight:560;}
+  .metric-row .lbl{font-size:.78rem; color:var(--text-faint); text-align:right; max-width:120px;}
+  .metric-list{display:flex; flex-direction:column; gap:12px; margin-top:4px;}
+  .metric-item{display:flex; align-items:center; gap:10px; font-size:.82rem; color:var(--text-dim);}
+  .metric-item .swatch{width:8px; height:8px; border-radius:50%; flex:none;}
+
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin:32px 0 16px;}
+  .section-head h3{font-family:'Fraunces', serif; font-weight:500; font-size:1.2rem;}
+  .section-head .see-all{font-size:.8rem; color:var(--text-faint); font-weight:600;}
+
+  .quick-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .quick-item{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:18px; display:flex; flex-direction:column; gap:14px; transition:border-color .2s ease, transform .2s ease;
+  }
+  .quick-item:hover{border-color:var(--border-soft); transform:translateY(-2px);}
+  .quick-item .ic{width:38px; height:38px; border-radius:12px; background:var(--surface-strong); display:flex; align-items:center; justify-content:center; color:var(--leaf);}
+  .quick-item .ic svg{width:18px; height:18px;}
+  .quick-item span{font-size:.85rem; font-weight:700;}
+
+  .scroller{display:flex; gap:16px; overflow-x:auto; padding-bottom:10px; scroll-snap-type:x proximity;}
+  .scan-card{
+    flex:none; width:220px; scroll-snap-align:start;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:14px; cursor:pointer; transition:transform .2s ease;
+  }
+  .scan-card:hover{transform:translateY(-3px);}
+  .scan-thumb{
+    height:110px; border-radius:12px; margin-bottom:12px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .scan-thumb svg{width:36px; height:36px;}
+  .scan-card h4{font-size:.9rem; font-weight:700;}
+  .scan-card .meta{font-size:.74rem; color:var(--text-faint); margin-top:3px;}
+  .conf-pill{
+    display:inline-block; margin-top:10px; font-size:.7rem; font-weight:700; padding:4px 9px;
+    border-radius:999px;
+  }
+
+  .explore-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .tree-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .tree-card:hover{transform:translateY(-3px); border-color:var(--border-soft);}
+  .tree-visual{height:110px; display:flex; align-items:center; justify-content:center;}
+  .tree-visual svg{width:38px; height:38px;}
+  .tree-body{padding:14px 16px 16px;}
+  .tree-body .cat{font-size:.68rem; color:var(--leaf); font-weight:700;}
+  .tree-body h4{font-family:'Fraunces', serif; font-weight:560; font-size:1.05rem; margin-top:4px;}
+  .tree-body .tamil{font-size:.8rem; color:var(--text-dim); margin-top:2px;}
+  .tree-body .sci{font-size:.74rem; color:var(--text-faint); font-style:italic; margin-top:2px;}
+
+  .filter-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
+  .chip{
+    background:var(--surface-strong); border:1px solid var(--border); color:var(--text-dim);
+    border-radius:999px; padding:9px 16px; font-size:.8rem; font-weight:600;
+  }
+  .chip.active{background:var(--grad-primary); color:#0a1410; border-color:transparent;}
+
+  /* ---- Scan view ---- */
+  .scan-stage{
+    display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start;
+  }
+  .dropzone{
+    border:1.5px dashed var(--border); border-radius:var(--radius-lg);
+    min-height:360px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:30px; gap:16px; position:relative; background:var(--surface);
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .dropzone.dragging{border-color:var(--leaf); background:var(--surface-strong);}
+  .scan-ring{
+    width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--surface-strong); border:1px solid var(--border); position:relative;
+  }
+  .scan-ring svg{width:38px; height:38px; color:var(--leaf);}
+  .scan-ring::after{
+    content:""; position:absolute; inset:-1px; border-radius:50%;
+    border:2px solid transparent; border-top-color:var(--leaf); opacity:0;
+  }
+  .dropzone.scanning .scan-ring::after{opacity:1; animation:ringspin 1.1s linear infinite;}
+  @keyframes ringspin{to{transform:rotate(360deg);}}
+  .dropzone h3{font-family:'Fraunces', serif; font-weight:500; font-size:1.15rem;}
+  .dropzone p{color:var(--text-faint); font-size:.85rem; max-width:280px;}
+  .scan-status{font-size:.82rem; color:var(--leaf); font-weight:700; min-height:18px;}
+  #fileInput{display:none;}
+
+  .result-panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:26px;
+    display:none; min-height:360px;
+  }
+  .result-panel.show{display:block; animation:viewIn .5s cubic-bezier(.16,1,.3,1) both;}
+  .result-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .result-top .badge{font-size:.66rem; font-weight:800; letter-spacing:.03em; color:var(--amber); background:rgba(230,180,94,0.12); padding:5px 10px; border-radius:999px;}
+  .result-name h2{font-family:'Fraunces', serif; font-weight:560; font-size:1.7rem; margin-top:12px;}
+  .result-name .tamil{font-size:1rem; color:var(--text-dim); margin-top:2px;}
+  .result-name .sci{font-size:.85rem; color:var(--text-faint); font-style:italic; margin-top:3px;}
+  .conf-wrap{margin-top:18px;}
+  .conf-label{display:flex; justify-content:space-between; font-size:.78rem; color:var(--text-dim); margin-bottom:6px;}
+  .conf-track{height:6px; border-radius:99px; background:var(--surface-strong); overflow:hidden;}
+  .conf-fill{height:100%; border-radius:99px; background:var(--grad-primary); width:0%; transition:width 1.1s cubic-bezier(.16,1,.3,1);}
+  .result-desc{font-size:.86rem; color:var(--text-dim); line-height:1.6; margin-top:18px;}
+  .result-actions{display:flex; gap:10px; margin-top:22px; flex-wrap:wrap;}
+  .btn-small{
+    border:1px solid var(--border); background:var(--surface-strong); color:var(--text);
+    border-radius:999px; padding:10px 16px; font-size:.8rem; font-weight:700;
+  }
+  .btn-small.primary{background:var(--grad-primary); color:#0a1410; border:none;}
+  .note{font-size:.72rem; color:var(--text-faint); margin-top:18px; line-height:1.5;}
+
+  /* ---- AI chat view ---- */
+  .chat-shell{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    display:flex; flex-direction:column; height:min(70vh, 640px); overflow:hidden;
+  }
+  .chat-head{
+    display:flex; align-items:center; gap:12px; padding:18px 20px; border-bottom:1px solid var(--border-soft);
+  }
+  .chat-head .ic{width:38px; height:38px; border-radius:12px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center;}
+  .chat-head .ic svg{width:18px; height:18px; color:#0a1410;}
+  .chat-head h4{font-size:.92rem; font-weight:800;}
+  .chat-head .status{font-size:.72rem; color:var(--leaf);}
+  .chat-body{flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px;}
+  .msg{max-width:76%; padding:12px 15px; border-radius:16px; font-size:.87rem; line-height:1.5;}
+  .msg.bot{background:var(--surface-strong); border:1px solid var(--border-soft); align-self:flex-start; border-bottom-left-radius:4px;}
+  .msg.user{background:var(--grad-primary); color:#0a1410; align-self:flex-end; border-bottom-right-radius:4px; font-weight:600;}
+  .typing{display:flex; gap:4px; padding:4px 2px;}
+  .typing span{width:6px; height:6px; border-radius:50%; background:var(--text-faint); animation:tb 1.1s infinite ease-in-out;}
+  .typing span:nth-child(2){animation-delay:.15s;} .typing span:nth-child(3){animation-delay:.3s;}
+  @keyframes tb{0%,60%,100%{transform:translateY(0); opacity:.5;} 30%{transform:translateY(-4px); opacity:1;}}
+  .chip-row{display:flex; gap:8px; padding:0 20px 14px; flex-wrap:wrap;}
+  .suggest-chip{background:var(--surface-strong); border:1px solid var(--border); border-radius:999px; padding:8px 13px; font-size:.76rem; color:var(--text-dim);}
+  .suggest-chip:hover{color:var(--text); border-color:var(--leaf);}
+  .chat-input-row{display:flex; gap:10px; padding:16px 18px; border-top:1px solid var(--border-soft);}
+  .chat-input-row input{
+    flex:1; background:var(--surface-strong); border:1px solid var(--border); border-radius:999px;
+    padding:12px 18px; color:var(--text); outline:none; font-family:inherit; font-size:.87rem;
+  }
+  .send-btn{
+    width:44px; height:44px; border-radius:50%; border:none; background:var(--grad-primary);
+    display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .send-btn svg{width:17px; height:17px; color:#0a1410;}
+  .mic-btn{
+    width:44px; height:44px; border-radius:50%; border:1px solid var(--border); background:var(--surface-strong);
+    display:flex; align-items:center; justify-content:center; flex:none; color:var(--text-dim);
+  }
+  .mic-btn svg{width:16px; height:16px;}
+
+  /* ---- Profile ---- */
+  .profile-top{display:flex; align-items:center; gap:18px; margin-bottom:26px;}
+  .profile-avatar{width:64px; height:64px; border-radius:50%; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-size:1.4rem; font-weight:600; color:#0a1410;}
+  .profile-top h2{font-family:'Fraunces', serif; font-weight:560; font-size:1.3rem;}
+  .profile-top p{color:var(--text-faint); font-size:.84rem; margin-top:2px;}
+  .stat-row{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:26px;}
+  .stat-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:18px; text-align:center;}
+  .stat-box .num{font-family:'Fraunces', serif; font-size:1.6rem; font-weight:560;}
+  .stat-box .lbl{font-size:.74rem; color:var(--text-faint); margin-top:4px;}
+  .settings-list{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;}
+  .settings-item{display:flex; align-items:center; justify-content:between; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border-soft); font-size:.87rem;}
+  .settings-item:last-child{border-bottom:none;}
+  .settings-item span{flex:1;}
+  .settings-item svg{width:16px; height:16px; color:var(--text-faint);}
+  .settings-item .chev{margin-left:auto; color:var(--text-faint);}
+
+  /* ---- bottom nav (mobile) ---- */
+  .bottom-nav{display:none;}
+
+  @media (max-width:980px){
+    .shell{grid-template-columns:1fr;}
+    .rail{display:none;}
+    .grid-hero{grid-template-columns:1fr;}
+    .quick-grid{grid-template-columns:repeat(2,1fr);}
+    .explore-grid{grid-template-columns:repeat(2,1fr);}
+    .scan-stage{grid-template-columns:1fr;}
+    .search-pill{width:150px;}
+    .main{padding-bottom:110px;}
+    .bottom-nav{
+      display:flex; position:fixed; left:0; right:0; bottom:0; z-index:6;
+      background:var(--bg); border-top:1px solid var(--border-soft);
+      padding: 10px 6px calc(10px + var(--safe-b));
+      justify-content:space-around;
+    }
+    .bottom-nav .nav-btn{width:auto; flex:1; flex-direction:column; gap:4px; font-size:.62rem; height:auto; padding:6px 0; border-radius:12px;}
+    .bottom-nav .nav-btn span{display:block;}
+  }
+  @media (max-width:560px){
+    .quick-grid{grid-template-columns:repeat(2,1fr);}
+    .explore-grid{grid-template-columns:1fr 1fr;}
+    .stat-row{grid-template-columns:1fr 1fr 1fr; gap:8px;}
+    .auth-card{padding:30px 22px 26px;}
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="ambient">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+</div>
+
+<button class="theme-toggle top-corner" id="themeToggle" aria-label="Toggle theme">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+</button>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<section id="loginScreen">
+  <div class="login-grid">
+    <div class="login-art">
+      <div class="login-tag">
+        <div class="eyebrow serif" style="font-style:italic;">Tamil Nadu Tree Intelligence</div>
+        <h1>Every tree has<br/>a story worth<br/>reading.</h1>
+        <p>Point your camera at a leaf, a trunk, a fruit — TreeAI finds the species, reads its health, and answers what you ask next.</p>
+      </div>
+      <svg viewBox="0 0 520 520" fill="none">
+        <defs>
+          <linearGradient id="veinGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#6fcf8e"/>
+            <stop offset="1" stop-color="#3aa39a"/>
+          </linearGradient>
+        </defs>
+        <g opacity="0.55" stroke="url(#veinGrad)" stroke-width="1.4" fill="none">
+          <path d="M260 60 C 300 160, 300 220, 260 460"/>
+          <path d="M260 120 C 220 150, 190 160, 150 150"/>
+          <path d="M260 120 C 300 150, 330 160, 370 150"/>
+          <path d="M260 190 C 210 215, 175 220, 130 205"/>
+          <path d="M260 190 C 310 215, 345 220, 390 205"/>
+          <path d="M260 260 C 205 285, 165 290, 115 270"/>
+          <path d="M260 260 C 315 285, 355 290, 405 270"/>
+          <path d="M260 330 C 215 350, 185 358, 145 345"/>
+          <path d="M260 330 C 305 350, 335 358, 375 345"/>
+          <path d="M260 400 C 230 415, 210 420, 180 412"/>
+          <path d="M260 400 C 290 415, 310 420, 340 412"/>
+        </g>
+        <g opacity="0.9">
+          <circle cx="150" cy="150" r="3.5" fill="#e6b45e"/>
+          <circle cx="370" cy="150" r="3.5" fill="#6fcf8e"/>
+          <circle cx="115" cy="270" r="3.5" fill="#6fcf8e"/>
+          <circle cx="405" cy="270" r="3.5" fill="#3aa39a"/>
+          <circle cx="145" cy="345" r="3.5" fill="#3aa39a"/>
+          <circle cx="180" cy="412" r="3.5" fill="#e6b45e"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="auth-card">
+      <div class="brand-row">
+        <div class="wordmark">
+          <svg class="mark" viewBox="0 0 34 34" fill="none">
+            <path d="M17 3C10 6 6 12 6 18c0 6.6 5.4 12 12 12s12-5.4 12-12c0-6-4-12-11-15Z" fill="url(#lg)"/>
+            <path d="M17 30V15" stroke="#0a1410" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M17 20l-5-4M17 24l6-5" stroke="#0a1410" stroke-width="1.3" stroke-linecap="round"/>
+            <defs><linearGradient id="lg" x1="6" y1="3" x2="29" y2="30"><stop stop-color="#7fd99a"/><stop offset="1" stop-color="#2f8f7c"/></linearGradient></defs>
+          </svg>
+          <span class="name"><b>Tree</b>AI</span>
+        </div>
+      </div>
+
+      <div id="signInForm">
+        <h2>Welcome back</h2>
+        <p class="sub">Sign in to continue exploring Tamil Nadu's trees.</p>
+        <form id="loginForm" style="margin-top:22px;">
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="you@example.com" required autocomplete="email"/>
+          </div>
+          <div class="field">
+            <label for="pwd">Password</label>
+            <input id="pwd" type="password" placeholder="••••••••" required autocomplete="current-password"/>
+          </div>
+          <div class="row-between">
+            <label class="chk"><input type="checkbox"/> Remember me</label>
+            <button type="button" class="link-btn" id="forgotBtn">Forgot password?</button>
+          </div>
+          <div class="form-hint" id="loginHint"></div>
+          <button class="btn-primary" type="submit" id="loginBtn"><span class="txt">Sign in</span><span class="spinner"></span></button>
+        </form>
+        <div class="divider">or</div>
+        <p class="switch-mode">New to TreeAI? <button id="toSignup">Create an account</button></p>
+      </div>
+
+      <div id="signUpForm" style="display:none;">
+        <h2>Create your account</h2>
+        <p class="sub">Join to identify, track and understand trees.</p>
+        <form id="signupForm" style="margin-top:22px;">
+          <div class="field">
+            <label for="suName">Full name</label>
+            <input id="suName" type="text" placeholder="Your name" required autocomplete="name"/>
+          </div>
+          <div class="field">
+            <label for="suEmail">Email</label>
+            <input id="suEmail" type="email" placeholder="you@example.com" required autocomplete="email"/>
+          </div>
+          <div class="field">
+            <label for="suPwd">Password</label>
+            <input id="suPwd" type="password" placeholder="Create a password" required autocomplete="new-password"/>
+          </div>
+          <button class="btn-primary" type="submit" style="margin-top:6px;"><span class="txt">Create account</span><span class="spinner"></span></button>
+        </form>
+        <div class="divider">or</div>
+        <p class="switch-mode">Already have an account? <button id="toSignin">Sign in</button></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app">
+  <div class="shell">
+    <nav class="rail">
+      <div class="wordmark"><svg class="mark" viewBox="0 0 34 34" fill="none">
+        <path d="M17 3C10 6 6 12 6 18c0 6.6 5.4 12 12 12s12-5.4 12-12c0-6-4-12-11-15Z" fill="url(#lg2)"/>
+        <path d="M17 30V15" stroke="#0a1410" stroke-width="1.6" stroke-linecap="round"/>
+        <defs><linearGradient id="lg2" x1="6" y1="3" x2="29" y2="30"><stop stop-color="#7fd99a"/><stop offset="1" stop-color="#2f8f7c"/></linearGradient></defs>
+      </svg><span class="name">TreeAI</span></div>
+
+      <button class="nav-btn active" data-view="home" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>
+        <span class="dot"></span>
+      </button>
+      <button class="nav-btn" data-view="scan" aria-label="Scan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.4-2h5.2L16 6"/></svg>
+      </button>
+      <button class="nav-btn" data-view="chat" aria-label="AI assistant">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4V5Z"/></svg>
+      </button>
+      <button class="nav-btn" data-view="explore" aria-label="Explore">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 6-6 2 2-6 6-2Z"/></svg>
+      </button>
+      <button class="nav-btn" data-view="profile" aria-label="Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.5-4 4.2-6 7-6s5.5 2 7 6"/></svg>
+      </button>
+      <div class="rail-spacer"></div>
+      <button class="nav-btn logout" id="logoutBtnRail" aria-label="Log out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </nav>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="greeting">
+          <div class="eyebrow" id="greetTime">Good morning</div>
+          <h1>Hello, <span class="accent" id="greetName">Explorer</span></h1>
+        </div>
+        <div class="top-actions">
+          <div class="search-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="text" placeholder="Search trees, symptoms…" id="globalSearch"/>
+          </div>
+          <div class="avatar" id="avatarInit">E</div>
+        </div>
+      </div>
+
+      <!-- HOME VIEW -->
+      <section class="view active" data-view="home">
+        <div class="grid-hero">
+          <div class="card hero-scan">
+            <div>
+              <div class="eyebrow">Primary feature</div>
+              <h2>Discover the tree around you.</h2>
+              <p>Snap a photo of a leaf, trunk or fruit — TreeAI names the species and checks on its health.</p>
+            </div>
+            <div class="cta-row">
+              <button class="btn-cta" id="goScanBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.2"/></svg>
+                Scan a tree
+              </button>
+              <button class="btn-ghost" id="goChatBtn2">Ask TreeAI</button>
+            </div>
+            <svg class="scan-orb" viewBox="0 0 200 200" fill="none">
+              <circle cx="100" cy="100" r="95" stroke="url(#orbGrad)" stroke-width="1" opacity=".5"/>
+              <circle cx="100" cy="100" r="70" stroke="url(#orbGrad)" stroke-width="1" opacity=".35"/>
+              <defs><linearGradient id="orbGrad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6fcf8e"/><stop offset="1" stop-color="#3aa39a"/></linearGradient></defs>
+            </svg>
+          </div>
+
+          <div class="card snapshot-card">
+            <h3>This month</h3>
+            <div class="metric-row">
+              <span class="num">12</span>
+              <span class="lbl">trees scanned across your campus &amp; garden</span>
+            </div>
+            <div class="metric-list">
+              <div class="metric-item"><span class="swatch" style="background:var(--leaf)"></span> 9 healthy identifications</div>
+              <div class="metric-item"><span class="swatch" style="background:var(--amber)"></span> 2 needing attention</div>
+              <div class="metric-item"><span class="swatch" style="background:var(--teal)"></span> 14 questions asked to TreeAI</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-grid">
+          <button class="quick-item" data-view="scan">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.2"/></svg></div>
+            <span>Identify tree</span>
+          </button>
+          <button class="quick-item" data-view="scan">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v6M12 21c-4-2-6-5.5-6-9a6 6 0 0 1 12 0c0 3.5-2 7-6 9Z"/></svg></div>
+            <span>Tree health</span>
+          </button>
+          <button class="quick-item" data-view="chat">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4V5Z"/></svg></div>
+            <span>Ask AI</span>
+          </button>
+          <button class="quick-item" data-view="chat">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+            <span>Voice AI</span>
+          </button>
+        </div>
+
+        <div class="section-head"><h3>Recent scans</h3><span class="see-all">View all</span></div>
+        <div class="scroller" id="recentScans"></div>
+
+        <div class="section-head"><h3>Explore Tamil Nadu trees</h3><span class="see-all" data-view="explore" style="cursor:pointer;">Browse all</span></div>
+        <div class="explore-grid" id="homeExplore"></div>
+      </section>
+
+      <!-- SCAN VIEW -->
+      <section class="view" data-view="scan">
+        <div class="section-head" style="margin-top:0;"><h3>Tree scanner</h3></div>
+        <div class="scan-stage">
+          <div class="dropzone" id="dropzone">
+            <div class="scan-ring" id="scanRing">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.2"/></svg>
+            </div>
+            <h3>Align the tree inside the frame</h3>
+            <p>Leaves, bark, fruit or the full tree all work. Drop an image or use the buttons below.</p>
+            <div class="scan-status" id="scanStatus"></div>
+            <div class="cta-row">
+              <button class="btn-cta" id="uploadBtn">Upload image</button>
+              <button class="btn-ghost" id="demoScanBtn">Try a demo scan</button>
+            </div>
+            <input type="file" id="fileInput" accept="image/*"/>
+          </div>
+
+          <div class="result-panel" id="resultPanel">
+            <div class="result-top">
+              <span class="badge">AI preview</span>
+            </div>
+            <div class="result-name">
+              <h2>Mango</h2>
+              <div class="tamil">மாமரம்</div>
+              <div class="sci">Mangifera indica</div>
+            </div>
+            <div class="conf-wrap">
+              <div class="conf-label"><span>AI confidence</span><span>94%</span></div>
+              <div class="conf-track"><div class="conf-fill" id="confFill"></div></div>
+            </div>
+            <p class="result-desc">A broad, evergreen tree common across Tamil Nadu's home gardens and orchards, prized for its fruit and dense summer shade. Look for long, leathery leaves and a thick, textured bark.</p>
+            <div class="result-actions">
+              <button class="btn-small primary" data-view="chat">Check tree health</button>
+              <button class="btn-small" data-view="chat">Ask TreeAI</button>
+              <button class="btn-small">Save result</button>
+            </div>
+            <p class="note">Preliminary AI assessment for a live demo — accuracy depends on the trained model behind it. Always confirm with a qualified agricultural or forestry expert when it matters.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAT VIEW -->
+      <section class="view" data-view="chat">
+        <div class="section-head" style="margin-top:0;"><h3>TreeAI assistant</h3></div>
+        <div class="chat-shell">
+          <div class="chat-head">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v6M12 21c-4-2-6-5.5-6-9a6 6 0 0 1 12 0c0 3.5-2 7-6 9Z"/></svg></div>
+            <div>
+              <h4>TreeAI</h4>
+              <div class="status">● Preview assistant</div>
+            </div>
+          </div>
+          <div class="chat-body" id="chatBody">
+            <div class="msg bot">Hi, I'm TreeAI 🌿 Ask me about a tree, its symptoms, or how to care for it — I currently know most about the tree you last scanned, Mango.</div>
+          </div>
+          <div class="chip-row">
+            <button class="suggest-chip" data-q="What diseases can affect mango trees?">Diseases in mango?</button>
+            <button class="suggest-chip" data-q="Why are its leaves turning yellow?">Yellow leaves — why?</button>
+            <button class="suggest-chip" data-q="How do I care for a neem tree?">Caring for neem</button>
+          </div>
+          <div class="chat-input-row">
+            <button class="mic-btn" id="micBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+            <input type="text" id="chatInput" placeholder="Ask about a tree, disease or symptom…"/>
+            <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M14 6l6 6-6 6"/></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPLORE VIEW -->
+      <section class="view" data-view="explore">
+        <div class="section-head" style="margin-top:0;"><h3>Explore Tamil Nadu trees</h3></div>
+        <div class="filter-row" id="filterRow"></div>
+        <div class="explore-grid" id="exploreGrid"></div>
+      </section>
+
+      <!-- PROFILE VIEW -->
+      <section class="view" data-view="profile">
+        <div class="profile-top">
+          <div class="profile-avatar" id="profileInit">E</div>
+          <div>
+            <h2 id="profileName">Explorer</h2>
+            <p id="profileEmail">you@example.com</p>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box"><div class="num">12</div><div class="lbl">Scans</div></div>
+          <div class="stat-box"><div class="num">5</div><div class="lbl">Saved trees</div></div>
+          <div class="stat-box"><div class="num">14</div><div class="lbl">AI chats</div></div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item"><span>Language</span><span style="color:var(--text-faint); font-size:.8rem;">English</span></div>
+          <div class="settings-item"><span>Voice &amp; speech</span><span style="color:var(--text-faint); font-size:.8rem;">On</span></div>
+          <div class="settings-item"><span>Notifications</span><span style="color:var(--text-faint); font-size:.8rem;">Minimal</span></div>
+          <div class="settings-item"><span>Privacy &amp; data</span></div>
+          <div class="settings-item"><span>About TreeAI</span></div>
+          <div class="settings-item" id="logoutBtnProfile" style="cursor:pointer; color:var(--rose);"><span>Log out</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg><span>Home</span></button>
+    <button class="nav-btn" data-view="scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.2"/></svg><span>Scan</span></button>
+    <button class="nav-btn" data-view="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4V5Z"/></svg><span>AI</span></button>
+    <button class="nav-btn" data-view="explore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 6-6 2 2-6 6-2Z"/></svg><span>Explore</span></button>
+    <button class="nav-btn" data-view="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.5-4 4.2-6 7-6s5.5 2 7 6"/></svg><span>Profile</span></button>
+  </nav>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Theme ---------- */
+  var themeToggle = document.getElementById('themeToggle');
+  var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  var savedTheme = null;
+  try{ savedTheme = null; }catch(e){}
+  document.body.setAttribute('data-theme', prefersLight ? 'light' : 'dark');
+  themeToggle.addEventListener('click', function(){
+    var cur = document.body.getAttribute('data-theme');
+    document.body.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+  });
+
+  /* ---------- Tree data ---------- */
+  var TREES = [
+    {name:"Mango", tamil:"மாமரம்", sci:"Mangifera indica", cat:"Fruit", color1:"#6fcf8e", color2:"#2f8f7c"},
+    {name:"Neem", tamil:"வேம்பு", sci:"Azadirachta indica", cat:"Medicinal", color1:"#8bd98a", color2:"#3aa39a"},
+    {name:"Coconut", tamil:"தென்னை", sci:"Cocos nucifera", cat:"Agricultural", color1:"#e6b45e", color2:"#c98f3a"},
+    {name:"Banyan", tamil:"ஆலமரம்", sci:"Ficus benghalensis", cat:"Native", color1:"#6fcf8e", color2:"#245c46"},
+    {name:"Tamarind", tamil:"புளியமரம்", sci:"Tamarindus indica", cat:"Fruit", color1:"#dd8f80", color2:"#b1604f"},
+    {name:"Guava", tamil:"கொய்யா", sci:"Psidium guajava", cat:"Fruit", color1:"#a8d8b9", color2:"#3aa39a"},
+    {name:"Jackfruit", tamil:"பலாமரம்", sci:"Artocarpus heterophyllus", cat:"Fruit", color1:"#e6b45e", color2:"#8f6a2f"},
+    {name:"Drumstick", tamil:"முருங்கை", sci:"Moringa oleifera", cat:"Medicinal", color1:"#8bd98a", color2:"#2f8f6f"},
+    {name:"Teak", tamil:"தேக்கு", sci:"Tectona grandis", cat:"Forest", color1:"#3aa39a", color2:"#1f5a54"},
+    {name:"Peepal", tamil:"அரசமரம்", sci:"Ficus religiosa", cat:"Native", color1:"#6fcf8e", color2:"#2f8f6f"},
+    {name:"Amla", tamil:"நெல்லிமரம்", sci:"Phyllanthus emblica", cat:"Medicinal", color1:"#a8d8b9", color2:"#3aa39a"},
+    {name:"Casuarina", tamil:"சவுக்கு", sci:"Casuarina equisetifolia", cat:"Forest", color1:"#9bb3a6", color2:"#556e62"}
+  ];
+  var CATEGORIES = ["All","Native","Fruit","Medicinal","Agricultural","Forest"];
+
+  function leafSVG(c1,c2,id){
+    return '<svg viewBox="0 0 40 40" fill="none"><defs><linearGradient id="'+id+'" x1="4" y1="4" x2="36" y2="36">'+
+      '<stop stop-color="'+c1+'"/><stop offset="1" stop-color="'+c2+'"/></linearGradient></defs>'+
+      '<path d="M20 4c-8 3-14 10-14 18 0 8 6.4 14 14 14s14-6 14-14c0-8-6-15-14-18Z" fill="url(#'+id+')" opacity="0.9"/>'+
+      '<path d="M20 34V16" stroke="rgba(10,20,16,.55)" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  }
+  function bgGrad(c1,c2){ return 'linear-gradient(135deg, '+c1+'33, '+c2+'22)'; }
+
+  /* ---------- Render recent scans ---------- */
+  var recentEl = document.getElementById('recentScans');
+  var recentData = [
+    {t:TREES[0], date:"Today", conf:94, note:"Healthy"},
+    {t:TREES[3], date:"Yesterday", conf:88, note:"Healthy"},
+    {t:TREES[1], date:"3 days ago", conf:76, note:"Check leaves"},
+    {t:TREES[5], date:"Last week", conf:91, note:"Healthy"}
+  ];
+  recentData.forEach(function(r){
+    var el = document.createElement('div');
+    el.className = 'scan-card';
+    var confColor = r.conf>=90 ? 'var(--leaf)' : (r.conf>=70 ? 'var(--amber)' : 'var(--rose)');
+    el.innerHTML =
+      '<div class="scan-thumb" style="background:'+bgGrad(r.t.color1,r.t.color2)+'">'+leafSVG(r.t.color1,r.t.color2,'rs'+Math.random().toString(36).slice(2))+'</div>'+
+      '<h4>'+r.t.name+'</h4><div class="meta">'+r.date+' · '+r.t.tamil+'</div>'+
+      '<span class="conf-pill" style="background:'+confColor+'22; color:'+confColor+';">'+r.conf+'% · '+r.note+'</span>';
+    recentEl.appendChild(el);
+  });
+
+  /* ---------- Explore grid (home preview + full) ---------- */
+  function treeCardHTML(t){
+    var id = 'tc'+Math.random().toString(36).slice(2);
+    return '<div class="tree-card" data-cat="'+t.cat+'" data-name="'+t.name.toLowerCase()+'">'+
+      '<div class="tree-visual" style="background:'+bgGrad(t.color1,t.color2)+'">'+leafSVG(t.color1,t.color2,id)+'</div>'+
+      '<div class="tree-body"><div class="cat">'+t.cat+'</div><h4>'+t.name+'</h4>'+
+      '<div class="tamil">'+t.tamil+'</div><div class="sci">'+t.sci+'</div></div></div>';
+  }
+  document.getElementById('homeExplore').innerHTML = TREES.slice(0,4).map(treeCardHTML).join('');
+  var exploreGrid = document.getElementById('exploreGrid');
+  exploreGrid.innerHTML = TREES.map(treeCardHTML).join('');
+
+  var filterRow = document.getElementById('filterRow');
+  CATEGORIES.forEach(function(cat, i){
+    var b = document.createElement('button');
+    b.className = 'chip' + (i===0 ? ' active' : '');
+    b.textContent = cat;
+    b.addEventListener('click', function(){
+      filterRow.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active');});
+      b.classList.add('active');
+      Array.prototype.forEach.call(exploreGrid.children, function(card){
+        card.style.display = (cat==='All' || card.getAttribute('data-cat')===cat) ? '' : 'none';
+      });
+    });
+    filterRow.appendChild(b);
+  });
+
+  document.getElementById('globalSearch').addEventListener('input', function(e){
+    var q = e.target.value.trim().toLowerCase();
+    if(!q){ return; }
+    switchView('explore');
+    Array.prototype.forEach.call(exploreGrid.children, function(card){
+      card.style.display = card.getAttribute('data-name').indexOf(q) > -1 ? '' : 'none';
+    });
+    filterRow.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active');});
+  });
+
+  /* ---------- View routing ---------- */
+  var views = document.querySelectorAll('.view');
+  var navBtns = document.querySelectorAll('.nav-btn[data-view], .quick-item[data-view], [data-view].see-all, .btn-small[data-view]');
+  function switchView(name){
+    views.forEach(function(v){ v.classList.toggle('active', v.getAttribute('data-view')===name); });
+    document.querySelectorAll('.nav-btn[data-view]').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-view')===name);
+    });
+    document.querySelector('.main').scrollTo && window.scrollTo({top:0, behavior:'smooth'});
+  }
+  document.querySelectorAll('[data-view]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var v = el.getAttribute('data-view');
+      if(v) switchView(v);
+    });
+  });
+  document.getElementById('goScanBtn').addEventListener('click', function(){ switchView('scan'); });
+  document.getElementById('goChatBtn2').addEventListener('click', function(){ switchView('chat'); });
+
+  /* ---------- Greeting ---------- */
+  function setGreeting(){
+    var h = new Date().getHours();
+    var t = h<12 ? "Good morning" : (h<17 ? "Good afternoon" : "Good evening");
+    document.getElementById('greetTime').textContent = t + " 🌿";
+  }
+
+  /* ---------- Auth (client-side demo) ---------- */
+  var loginScreen = document.getElementById('loginScreen');
+  var app = document.getElementById('app');
+
+  function enterApp(name, email){
+    var initial = (name||"E").trim().charAt(0).toUpperCase() || "E";
+    document.getElementById('greetName').textContent = name || "Explorer";
+    document.getElementById('avatarInit').textContent = initial;
+    document.getElementById('profileInit').textContent = initial;
+    document.getElementById('profileName').textContent = name || "Explorer";
+    document.getElementById('profileEmail').textContent = email || "you@example.com";
+    setGreeting();
+    loginScreen.classList.add('hidden');
+    app.classList.add('active');
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('loginBtn');
+    var email = document.getElementById('email').value.trim();
+    var pwd = document.getElementById('pwd').value;
+    var hint = document.getElementById('loginHint');
+    if(pwd.length < 4){
+      hint.textContent = "Password should be at least 4 characters.";
+      return;
+    }
+    hint.textContent = "";
+    btn.classList.add('loading');
+    setTimeout(function(){
+      btn.classList.remove('loading');
+      var name = email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+      enterApp(name, email);
+    }, 850);
+  });
+
+  document.getElementById('signupForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = document.getElementById('suName').value.trim();
+    var email = document.getElementById('suEmail').value.trim();
+    var btn = e.target.querySelector('.btn-primary');
+    btn.classList.add('loading');
+    setTimeout(function(){
+      btn.classList.remove('loading');
+      enterApp(name, email);
+    }, 850);
+  });
+
+  document.getElementById('toSignup').addEventListener('click', function(){
+    document.getElementById('signInForm').style.display = 'none';
+    document.getElementById('signUpForm').style.display = 'block';
+  });
+  document.getElementById('toSignin').addEventListener('click', function(){
+    document.getElementById('signUpForm').style.display = 'none';
+    document.getElementById('signInForm').style.display = 'block';
+  });
+  document.getElementById('forgotBtn').addEventListener('click', function(){
+    document.getElementById('loginHint').textContent = "Password reset isn't wired up in this preview.";
+  });
+
+  function logout(){
+    app.classList.remove('active');
+    loginScreen.classList.remove('hidden');
+    switchView('home');
+    document.getElementById('loginForm').reset();
+  }
+  document.getElementById('logoutBtnRail').addEventListener('click', logout);
+  document.getElementById('logoutBtnProfile').addEventListener('click', logout);
+
+  /* ---------- Scan flow ---------- */
+  var dropzone = document.getElementById('dropzone');
+  var scanStatus = document.getElementById('scanStatus');
+  var resultPanel = document.getElementById('resultPanel');
+  var confFill = document.getElementById('confFill');
+  var fileInput = document.getElementById('fileInput');
+
+  document.getElementById('uploadBtn').addEventListener('click', function(){ fileInput.click(); });
+  fileInput.addEventListener('change', function(){ if(fileInput.files.length) runScan(); });
+  document.getElementById('demoScanBtn').addEventListener('click', runScan);
+
+  ['dragover','dragleave','drop'].forEach(function(evt){
+    dropzone.addEventListener(evt, function(e){
+      e.preventDefault();
+      dropzone.classList.toggle('dragging', evt==='dragover');
+      if(evt==='drop') runScan();
+    });
+  });
+
+  var scanSteps = ["Preparing image…","Analyzing visual features…","Comparing against known species…","Preparing tree profile…"];
+  function runScan(){
+    resultPanel.classList.remove('show');
+    confFill.style.width = '0%';
+    dropzone.classList.add('scanning');
+    var i = 0;
+    scanStatus.textContent = scanSteps[0];
+    var iv = setInterval(function(){
+      i++;
+      if(i < scanSteps.length){ scanStatus.textContent = scanSteps[i]; }
+      else {
+        clearInterval(iv);
+        dropzone.classList.remove('scanning');
+        scanStatus.textContent = "Tree identified";
+        resultPanel.classList.add('show');
+        setTimeout(function(){ confFill.style.width = '94%'; }, 60);
+      }
+    }, 620);
+  }
+
+  /* ---------- Chat ---------- */
+  var chatBody = document.getElementById('chatBody');
+  var chatInput = document.getElementById('chatInput');
+  function addMsg(text, who){
+    var d = document.createElement('div');
+    d.className = 'msg ' + who;
+    d.textContent = text;
+    chatBody.appendChild(d);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+  function botReply(q){
+    var lower = q.toLowerCase();
+    var reply;
+    if(lower.indexOf('yellow') > -1){
+      reply = "Yellowing mango leaves are often a sign of overwatering, nutrient deficiency (usually nitrogen or iron), or early leaf spot disease. Check the soil drainage first, then look for spots or a powdery coating on the leaf underside.";
+    } else if(lower.indexOf('disease') > -1 && lower.indexOf('mango') > -1){
+      reply = "Mango trees in Tamil Nadu commonly face anthracnose, powdery mildew and bacterial black spot. Anthracnose shows as dark, sunken spots on leaves and fruit — it's most common in humid weather right after flowering.";
+    } else if(lower.indexOf('neem') > -1){
+      reply = "Neem is low-maintenance once established — it prefers full sun and tolerates poor, dry soils well. Water young trees regularly for the first year, then only during long dry spells.";
+    } else if(lower.indexOf('water') > -1){
+      reply = "Most established Tamil Nadu trees do well with deep, infrequent watering rather than frequent light watering — it encourages roots to grow deeper and more drought-resilient.";
+    } else if(lower.indexOf('coconut') > -1){
+      reply = "Coconut palms are sensitive to bud rot and red palm weevil damage. Look for wilting of the youngest fronds and a foul smell near the crown — that combination usually needs prompt attention.";
+    } else {
+      var fallbacks = [
+        "Good question — based on your last scan (Mango), that's usually tied to watering, sunlight or a leaf-level symptom. Can you tell me more about what you're seeing?",
+        "I can help with that. Which part of the tree looks affected — leaves, bark, fruit or roots?",
+        "Let me think about that in the context of your scanned tree. Could you describe the symptom a bit more?"
+      ];
+      reply = fallbacks[Math.floor(Math.random()*fallbacks.length)];
+    }
+    return reply;
+  }
+  function sendChat(text){
+    text = (text||chatInput.value).trim();
+    if(!text) return;
+    addMsg(text, 'user');
+    chatInput.value = '';
+    var typing = document.createElement('div');
+    typing.className = 'msg bot';
+    typing.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+    chatBody.appendChild(typing);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    setTimeout(function(){
+      typing.remove();
+      addMsg(botReply(text), 'bot');
+    }, 900 + Math.random()*500);
+  }
+  document.getElementById('sendBtn').addEventListener('click', function(){ sendChat(); });
+  chatInput.addEventListener('keydown', function(e){ if(e.key==='Enter') sendChat(); });
+  document.querySelectorAll('.suggest-chip').forEach(function(c){
+    c.addEventListener('click', function(){ sendChat(c.getAttribute('data-q')); });
+  });
+  document.getElementById('micBtn').addEventListener('click', function(){
+    addMsg("(voice input isn't wired up in this preview — try typing instead)", 'bot');
+  });
+
+  setGreeting();
+})();
+</script>
+</body>
+</html>
