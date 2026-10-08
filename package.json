@@ -1,0 +1,17 @@
+{
+  "name": "treeai",
+  "version": "1.0.0",
+  "description": "TreeAI — Tamil Nadu Tree Intelligence. Gemini-powered tree & tree-health scanner with Supabase auth, storage and database.",
+  "private": true,
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "start": "node scripts/dev-server.js",
+    "test": "node test/validate.test.js && node test/api.test.js",
+    "check": "node --check public/src/app.js && node --check scripts/dev-server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}
